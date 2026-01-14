@@ -189,35 +189,91 @@ export class RegistroComponent implements OnInit {
 imprimirTicket(): void {
   if (!this.ticketEntrada) return;
 
-  // Obtener el elemento del ticket
   const ticketElement = document.getElementById('ticket-print');
   if (!ticketElement) return;
 
-  // Crear ventana de impresión
   const ventanaImpresion = window.open('', '_blank', 'width=350,height=600');
   if (!ventanaImpresion) return;
+
+  // Obtener la URL base de la aplicación
+  const baseUrl = window.location.origin;
 
   const html = `
     <html>
       <head>
         <title>Ticket de Entrada</title>
         <style>
-          @page { size: 80mm auto; margin: 0; }
+          @page { 
+            size: 80mm auto; 
+            margin: 0; 
+          }
           body { 
             margin: 0; 
-            font-family: monospace; 
-            font-size: 12px; 
+            padding: 0;
+            font-family: 'Courier New', monospace; 
+            background: white;
           }
           .ticket { 
             width: 80mm; 
-            padding: 5mm; 
-            text-align: center; 
+            max-width: 80mm;
+            padding: 3mm 5mm;
+            text-align: center;
+            box-sizing: border-box;
           }
-          h4 { margin: 4px 0; }
-          p { margin: 3px 0; }
-          hr { border: 0; border-top: 1px dashed #000; margin: 6px 0; }
-          svg { margin-top: 6px; }
-          .msg { font-size: 10px; margin-top: 8px; line-height: 1.4; }
+          .ticket-logo {
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            width: 100%;
+          }
+          .ticket-logo img {
+            max-width: 60mm;
+            width: 100%;
+            max-height: 25mm;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            object-fit: contain;
+          }
+          h4 { 
+            margin: 3px 0;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.3;
+          }
+          p { 
+            margin: 3px 0;
+            font-size: 11px;
+            line-height: 1.4;
+            text-align: left;
+            padding-left: 3mm;
+          }
+          p strong {
+            font-weight: bold;
+            display: inline-block;
+            min-width: 65px;
+          }
+          hr { 
+            border: none; 
+            border-top: 1px dashed #000; 
+            margin: 6px 0;
+            opacity: 0.8;
+          }
+          svg { 
+            margin: 6px auto;
+            max-width: 68mm;
+            height: auto;
+            display: block;
+          }
+          .msg { 
+            font-size: 9px; 
+            margin-top: 8px;
+            line-height: 1.4;
+            text-align: center;
+            padding: 0 2mm;
+          }
         </style>
       </head>
       <body>
@@ -230,9 +286,14 @@ imprimirTicket(): void {
   ventanaImpresion.document.write(html);
   ventanaImpresion.document.close();
 
-  // Esperar a que cargue y luego imprimir automáticamente
   ventanaImpresion.onload = () => {
-    // Regenerar el código de barras en la ventana de impresión
+    // Actualizar la ruta de la imagen
+    const imgElement = ventanaImpresion.document.querySelector('.ticket-logo img') as HTMLImageElement;
+    if (imgElement) {
+      imgElement.src = `${baseUrl}/assets/images/111.png`;
+    }
+
+    // Regenerar el código de barras
     const barcodeElement = ventanaImpresion.document.getElementById('barcode');
     if (barcodeElement && this.ticketEntrada?.codigoBarras) {
       JsBarcode(barcodeElement, this.ticketEntrada.codigoBarras, {
@@ -243,90 +304,140 @@ imprimirTicket(): void {
       });
     }
 
-    // Imprimir automáticamente después de generar el código de barras
+    // Imprimir después de que todo cargue
     setTimeout(() => {
       ventanaImpresion.focus();
       ventanaImpresion.print();
       ventanaImpresion.close();
-    }, 200);
+    }, 500);
   };
 }
 
-private generarHTMLTicketEntrada(): string {
-  if (!this.ticketEntrada) return '';
+imprimirRecibo(): void {
+  if (!this.ticketSalida) return;
 
-  return `
-    <div class="ticket">
-      <h4>═══════════════════</h4>
-      <h4>PARQUEADERO</h4>
-      <h4>TICKET DE ENTRADA</h4>
-      <h4>═══════════════════</h4>
+  const reciboElement = document.getElementById('recibo-print');
+  if (!reciboElement) return;
 
-      <p><strong>Placa:</strong> ${this.ticketEntrada.placa}</p>
-      <p><strong>Tipo:</strong> ${this.ticketEntrada.tipo}</p>
-      <p><strong>Fecha:</strong> ${new Date(this.ticketEntrada.fecha).toLocaleDateString()}</p>
-      <p><strong>Hora:</strong> ${new Date(this.ticketEntrada.fecha).toLocaleTimeString()}</p>
+  const ventanaImpresion = window.open('', '_blank', 'width=350,height=600');
+  if (!ventanaImpresion) return;
 
-      <hr />
+  const baseUrl = window.location.origin;
 
-      <svg id="barcode-print"></svg>
-
-      <hr />
-
-      <p class="msg">
-        CONSERVE ESTE TICKET<br />
-        Preséntelo al salir<br />
-        No nos responsabilizamos<br />
-        por objetos dejados en<br />
-        el vehículo
-      </p>
-
-      <h4>GRACIAS POR SU VISITA</h4>
-    </div>
+  const html = `
+    <html>
+      <head>
+        <title>Recibo de Pago</title>
+        <style>
+          @page { 
+            size: 80mm auto; 
+            margin: 0; 
+          }
+          body { 
+            margin: 0; 
+            padding: 0;
+            font-family: 'Courier New', monospace; 
+            background: white;
+          }
+          .ticket { 
+            width: 80mm; 
+            max-width: 80mm;
+            padding: 3mm 5mm;
+            text-align: center;
+            box-sizing: border-box;
+          }
+          .ticket-logo {
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            width: 100%;
+          }
+          .ticket-logo img {
+            max-width: 60mm;
+            width: 100%;
+            max-height: 25mm;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            object-fit: contain;
+          }
+          h4 { 
+            margin: 3px 0;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.3;
+          }
+          p { 
+            margin: 3px 0;
+            font-size: 11px;
+            line-height: 1.4;
+            text-align: left;
+            padding-left: 3mm;
+          }
+          p strong {
+            font-weight: bold;
+            display: inline-block;
+            min-width: 65px;
+          }
+          hr { 
+            border: none; 
+            border-top: 1px dashed #000; 
+            margin: 6px 0;
+            opacity: 0.8;
+          }
+          svg { 
+            margin: 6px auto;
+            max-width: 68mm;
+            height: auto;
+            display: block;
+          }
+          .msg { 
+            font-size: 9px; 
+            margin-top: 8px;
+            line-height: 1.4;
+            text-align: center;
+            padding: 0 2mm;
+          }
+        </style>
+      </head>
+      <body>
+        ${reciboElement.innerHTML}
+      </body>
+    </html>
   `;
+
+  ventanaImpresion.document.open();
+  ventanaImpresion.document.write(html);
+  ventanaImpresion.document.close();
+
+  ventanaImpresion.onload = () => {
+    // Actualizar la ruta de la imagen
+    const imgElement = ventanaImpresion.document.querySelector('.ticket-logo img') as HTMLImageElement;
+    if (imgElement) {
+      imgElement.src = `${baseUrl}/assets/images/111.png`;
+    }
+
+    // Regenerar el código de barras del recibo
+    const barcodeElement = ventanaImpresion.document.getElementById('barcode-recibo');
+    if (barcodeElement && this.ultimoRegistro?.codigoBarras) {
+      JsBarcode(barcodeElement, this.ultimoRegistro.codigoBarras, {
+        format: 'CODE128',
+        width: 2,
+        height: 60,
+        displayValue: true
+      });
+    }
+
+    // Imprimir después de que todo cargue
+    setTimeout(() => {
+      ventanaImpresion.focus();
+      ventanaImpresion.print();
+      ventanaImpresion.close();
+    }, 500);
+  };
 }
-
-
-  imprimirRecibo(): void {
-    const recibo = document.getElementById('recibo-print');
-    if (recibo) this.imprimirElemento(recibo);
-  }
-
-  private imprimirElemento(elemento: HTMLElement): void {
-    const html = `
-      <html>
-        <head>
-          <title>Ticket Parqueadero</title>
-          <style>
-            @page { size: 80mm auto; margin: 0; }
-            body { margin: 0; font-family: monospace; font-size: 12px; }
-            .ticket { width: 80mm; padding: 5mm; text-align: center; }
-            h4 { margin: 4px 0; }
-            p { margin: 3px 0; }
-            hr { border: 0; border-top: 1px dashed #000; margin: 6px 0; }
-            svg { margin-top: 6px; }
-            .msg { font-size: 10px; margin-top: 8px; }
-          </style>
-        </head>
-        <body>
-          ${elemento.innerHTML}
-        </body>
-      </html>
-    `;
-
-    const win = window.open('', '_blank', 'width=350,height=600');
-    if (!win) return;
-
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
-
-    win.onload = () => {
-      win.focus();
-      win.print();
-      win.close();
-    };
-  }
 
   cerrarRecibo(): void {
     this.mostrarRecibo = false;

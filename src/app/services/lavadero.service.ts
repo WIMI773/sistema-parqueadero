@@ -23,76 +23,65 @@ export class LavaderoService {
     serviciosDisponibles: [
       {
         id: 'basico',
-        nombre: 'Lavado Básico',
-        precio: 15000,
+        nombre: 'Lavado General',
+        precio: 0,
         duracionEstimada: 30,
         descripcion: 'Lavado exterior e interior básico',
         preciosPorTipo: {
-          moto: 8000,
-          auto: 15000,
-          camion: 25000
+          moto: 12000,
+          auto: 40000,
+          camion: 50000
         }
       },
       {
         id: 'completo',
-        nombre: 'Lavado Completo',
-        precio: 25000,
+        nombre: 'Lavado General con Brillado',
+        precio: 0,
         duracionEstimada: 45,
         descripcion: 'Lavado exterior, interior y aspirado',
         preciosPorTipo: {
           moto: 12000,
-          auto: 25000,
-          camion: 40000
-        }
-      },
-      {
-        id: 'premium',
-        nombre: 'Lavado Premium',
-        precio: 40000,
-        duracionEstimada: 60,
-        descripcion: 'Lavado completo + encerado + limpieza profunda',
-        preciosPorTipo: {
-          moto: 20000,
-          auto: 40000,
+          auto: 50000,
           camion: 60000
         }
       },
       {
+        id: 'premium',
+        nombre: 'Guachapiada',
+        precio: 0,
+        duracionEstimada: 60,
+        descripcion: 'Lavado completo + encerado + limpieza profunda',
+        preciosPorTipo: {
+          moto: 12000,
+          auto: 25000,
+          camion: 30000
+        }
+      },
+      {
         id: 'encerado',
-        nombre: 'Encerado',
-        precio: 20000,
+        nombre: 'Guachapiada con Brillado',
+        precio: 0,
         duracionEstimada: 30,
         descripcion: 'Encerado y pulido de carrocería',
         preciosPorTipo: {
-          moto: 10000,
-          auto: 20000,
+          moto: 12000,
+          auto: 30000,
           camion: 35000
         }
       },
       {
         id: 'motor',
-        nombre: 'Lavado de Motor',
-        precio: 15000,
+        nombre: 'Lavado de Tapas',
+        precio: 0,
         duracionEstimada: 20,
         descripcion: 'Limpieza de motor',
         preciosPorTipo: {
-          moto: 8000,
+          moto: 12000,
           auto: 15000,
-          camion: 25000
+          camion: 20000
         }
       },
-      {
-        id: 'tapiceria',
-        nombre: 'Limpieza Tapicería',
-        precio: 30000,
-        duracionEstimada: 60,
-        descripcion: 'Lavado profundo de tapicería',
-        preciosPorTipo: {
-          moto: 15000,
-          auto: 30000,
-          camion: 50000
-        }
-      }
+      
     ],
     horaApertura: '08:00',
     horaCierre: '18:00'

@@ -124,6 +124,9 @@
     <!-- ========== TICKET DE ENTRADA ========== -->
 <div id="ticket-print" *ngIf="ticketEntrada" class="ticket-hidden">
   <div class="ticket">
+    <div class="ticket-logo">
+      <img src="assets/images/111.png" alt="Logo Parqueadero" />
+    </div>
     <h4>═══════════════════</h4>
     <h4>PARQUEADERO</h4>
     <h4>TICKET DE ENTRADA</h4>
@@ -237,8 +240,11 @@
     </div>
 
     <!-- ========== RECIBO PARA IMPRIMIR (OCULTO) ========== -->
-    <div id="recibo-print" *ngIf="ticketSalida" style="display:none">
-      <div class="ticket">
+<div id="recibo-print" *ngIf="ticketSalida" class="ticket-hidden">
+  <div class="ticket">
+    <div class="ticket-logo">
+      <img src="assets/images/111.png" alt="Logo Parqueadero" />
+    </div>
         <h4>═══════════════════</h4>
         <h4>PARQUEADERO</h4>
         <h4>RECIBO DE PAGO</h4>

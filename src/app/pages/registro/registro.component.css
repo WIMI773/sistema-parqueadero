@@ -955,6 +955,27 @@
     page-break-inside: avoid;
   }
 
+.ticket-logo {
+  text-align: center;
+  margin-bottom: 15px;
+  padding: 10px 0;
+}
+
+.ticket-logo img {
+  max-width: 120px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Para impresión */
+@media print {
+  .ticket-logo img {
+    max-width: 100px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
 
 #ticket-print .ticket,
 #recibo-print .ticket {
