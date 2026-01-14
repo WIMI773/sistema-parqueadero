@@ -1,0 +1,137 @@
+<div class="page-wrapper">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-back">
+      <button class="btn-back" (click)="volver()">← Volver</button>
+      <h1>Historial y Reportes</h1>
+    </div>
+    <button class="btn-download" (click)="descargarReporte()">📥 Descargar PDF</button>
+  </nav>
+
+  <div class="container">
+    <!-- KPI Section -->
+    <section class="kpi-grid">
+      <div class="kpi-card recaudado">
+        <div class="kpi-header">
+          <h3>Recaudado Hoy</h3>
+          <span class="icon">💰</span>
+        </div>
+        <div class="kpi-value">${{ totalRecaudado.toLocaleString("es-CO", { maximumFractionDigits: 0 }) }}</div>
+        <div class="kpi-footer">Total cobrado</div>
+      </div>
+
+      <div class="kpi-card pendiente">
+        <div class="kpi-header">
+          <h3>Pendiente de Pago</h3>
+          <span class="icon">⏳</span>
+        </div>
+        <div class="kpi-value">${{ totalPendiente.toLocaleString("es-CO", { maximumFractionDigits: 0 }) }}</div>
+        <div class="kpi-footer">Por cobrar</div>
+      </div>
+
+      <div class="kpi-card registros">
+        <div class="kpi-header">
+          <h3>Total de Registros</h3>
+          <span class="icon">📋</span>
+        </div>
+        <div class="kpi-value">{{ registrosFiltrados.length }}</div>
+        <div class="kpi-footer">Operaciones</div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters-section">
+      <div class="filters">
+        <button
+          class="filter-btn"
+          [class.active]="filtro === 'todos'"
+          (click)="cambiarFiltro('todos')"
+        >
+          Todos
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="filtro === 'entrada'"
+          (click)="cambiarFiltro('entrada')"
+        >
+          ➕ Entradas
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="filtro === 'salida'"
+          (click)="cambiarFiltro('salida')"
+        >
+          ⏱ Salidas
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="filtro === 'pagados'"
+          (click)="cambiarFiltro('pagados')"
+        >
+          ✅ Pagados
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="filtro === 'pendientes'"
+          (click)="cambiarFiltro('pendientes')"
+        >
+          ⏳ Pendientes
+        </button>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="table-section">
+      <div *ngIf="registrosFiltrados.length === 0" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>Sin registros para mostrar</p>
+      </div>
+
+      <div *ngIf="registrosFiltrados.length > 0" class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Placa</th>
+              <th>Tipo</th>
+              <th>Fecha/Hora</th>
+              <th>Duración</th>
+              <th>Tarifa</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let registro of registrosFiltrados" class="table-row">
+              <td class="plate">
+                <span class="plate-badge">{{ registro.placa }}</span>
+              </td>
+              <td>
+                <span class="type-badge" [class]="registro.tipo">
+                  {{ registro.tipo === "entrada" ? "ENTRADA" : "SALIDA" }}
+                </span>
+              </td>
+              <td>{{ registro.fecha | date : "dd/MM HH:mm" }}</td>
+              <td>{{ registro.duracion ? registro.duracion + " min" : "-" }}</td>
+              <td class="amount">${{ registro.tarifa ? (registro.tarifa | number:'1.0-0') : '-' }}</td>
+              <td>
+                <span class="status-badge" [class]="registro.pagado ? 'paid' : 'pending'">
+                  {{ registro.pagado ? "✓ PAGADO" : "⏳ PENDIENTE" }}
+                </span>
+              </td>
+              <td>
+                <button
+                  *ngIf="registro.tipo === 'salida'"
+                  class="btn-action"
+                  (click)="abrirRecibo(registro.id)"
+                  title="Ver recibo"
+                >
+                  🖨️
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>

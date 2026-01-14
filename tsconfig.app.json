@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/app",
+    "types": ["node"]
+  },
+  "files": [
+    "src/main.ts",
+    "src/polyfills.ts"
+  ],
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.ngtypecheck.ts",
+    "server.ts",
+    "server.ngtypecheck.ts",
+    "main.server.ts",
+    "src/app/app.config.server.ts"
+  ]
+}

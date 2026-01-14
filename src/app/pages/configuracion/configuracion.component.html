@@ -1,0 +1,160 @@
+<div class="page-wrapper">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-back">
+      <button class="btn-back" (click)="volver()">← Volver</button>
+      <h1>Configuración del Sistema</h1>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div *ngIf="mensaje" class="alert" [class]="'alert-' + tipoMensaje">
+      <span class="alert-icon">{{ tipoMensaje === 'success' ? '✓' : '✕' }}</span>
+      <span>{{ mensaje }}</span>
+    </div>
+
+    <form *ngIf="config" class="config-form">
+      <!-- Tarifas -->
+      <section class="form-section">
+        <div class="section-header">
+          <h2>💰 Tarifas de Estacionamiento</h2>
+          <span class="section-desc">Configurar precios por tipo de vehículo</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tarifaPorHora">Tarifa Autos/Hora</label>
+            <div class="input-group">
+              <span class="currency">$</span>
+              <input
+                id="tarifaPorHora"
+                type="number"
+                [(ngModel)]="config.tarifaPorHora"
+                name="tarifaPorHora"
+                min="0"
+                class="input-field"
+              />
+            </div>
+            <small>Tarifa estándar por hora</small>
+          </div>
+
+          <div class="form-group">
+            <label for="tarifaMoto">Tarifa Motos/Hora</label>
+            <div class="input-group">
+              <span class="currency">$</span>
+              <input
+                id="tarifaMoto"
+                type="number"
+                [(ngModel)]="config.tarifaMoto"
+                name="tarifaMoto"
+                min="0"
+                class="input-field"
+              />
+            </div>
+            <small>Tarifa especial para motos</small>
+          </div>
+
+          <div class="form-group">
+            <label for="tarifaCamion">Tarifa Camiones/Hora</label>
+            <div class="input-group">
+              <span class="currency">$</span>
+              <input
+                id="tarifaCamion"
+                type="number"
+                [(ngModel)]="config.tarifaCamion"
+                name="tarifaCamion"
+                min="0"
+                class="input-field"
+              />
+            </div>
+            <small>Tarifa para vehículos grandes</small>
+          </div>
+        </div>
+
+        <!-- Información de cobro -->
+        <div class="info-box">
+          <strong>ℹ️ Sistema de Cobro:</strong>
+          <ul>
+            <li>Primera hora: Se cobra tarifa completa</li>
+            <li>1h - 1h 15min: Se cobra tarifa + 50%</li>
+            <li>Más de 1h 15min: Se cobra siguiente hora completa</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Horarios -->
+      <section class="form-section">
+        <div class="section-header">
+          <h2>🕐 Horarios de Operación</h2>
+          <span class="section-desc">Definir horas de apertura y cierre</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="horaApertura">Hora Apertura</label>
+            <input
+              id="horaApertura"
+              type="time"
+              [(ngModel)]="config.horaApertura"
+              name="horaApertura"
+              class="input-field"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="horaCierre">Hora Cierre</label>
+            <input
+              id="horaCierre"
+              type="time"
+              [(ngModel)]="config.horaCierre"
+              name="horaCierre"
+              class="input-field"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- Capacidad (Información) -->
+      <section class="form-section">
+        <div class="section-header">
+          <h2>🅿️ Capacidad del Parqueadero</h2>
+          <span class="section-desc">Tu parqueadero tiene espacios ilimitados</span>
+        </div>
+
+        <div class="info-box success">
+          <strong>✓ Espacios Ilimitados</strong>
+          <p>El sistema no tiene límite de capacidad. Puedes registrar tantos vehículos como necesites.</p>
+        </div>
+      </section>
+
+      <!-- Actions -->
+      <section class="actions-section">
+        <button
+          type="button"
+          class="btn btn-save"
+          (click)="guardarConfiguracion()"
+          [disabled]="guardando"
+        >
+          <span *ngIf="!guardando">💾 Guardar Cambios</span>
+          <span *ngIf="guardando">Guardando...</span>
+        </button>
+        <button
+          type="button"
+          class="btn btn-reset"
+          (click)="reiniciarConfiguracion()"
+          [disabled]="guardando"
+        >
+          🔄 Valores Defecto
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="resetearDatos()"
+          [disabled]="guardando"
+        >
+          ⚠️ Resetear Datos
+        </button>
+      </section>
+    </form>
+  </div>
+</div>

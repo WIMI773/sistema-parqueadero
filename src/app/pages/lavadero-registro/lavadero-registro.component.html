@@ -1,0 +1,367 @@
+<!-- pages/lavadero-registro/lavadero-registro.component.html -->
+
+<div class="page-wrapper">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-back">
+      <button class="btn-back" (click)="volver()">← Volver</button>
+      <h1>🚿 Registro de Lavadero</h1>
+      <button class="btn-export" (click)="exportarPDF()">📄 Exportar PDF</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    
+    <!-- MODO ESCANEO DE CÓDIGO DE BARRAS -->
+    <section class="form-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));">
+      <h2>📷 Registrar Salida por Código de Barras</h2>
+      
+      <button 
+        class="btn-scan" 
+        (click)="toggleModoEscaneo()"
+        [class.active]="modoEscaneo"
+      >
+        {{ modoEscaneo ? '✕ Cancelar Escaneo' : '📷 Escanear Código' }}
+      </button>
+
+      <div *ngIf="modoEscaneo" class="scan-section">
+        <div class="form-group">
+          <label for="codigo-barras-input">Código de Barras</label>
+          <input
+            id="codigo-barras-input"
+            type="text"
+            [(ngModel)]="codigoBarrasInput"
+            (keyup.enter)="procesarCodigoBarras()"
+            placeholder="Escanee o ingrese el código..."
+            class="input-field"
+            autocomplete="off"
+          />
+        </div>
+        <button class="btn-submit" (click)="procesarCodigoBarras()">
+          ✓ Procesar Salida
+        </button>
+      </div>
+    </section>
+
+    <!-- Form Card -->
+    <section class="form-card">
+      <h2>Nuevo Servicio de Lavado</h2>
+
+      <form (ngSubmit)="registrar()" class="form">
+        
+        <!-- CAMPO PLACA -->
+        <div class="form-group">
+          <label for="placa">Placa del Vehículo</label>
+          <input
+            id="placa"
+            type="text"
+            [(ngModel)]="placa"
+            name="placa"
+            placeholder="Ej: ABC-123"
+            class="input-field"
+            autocomplete="off"
+          />
+        </div>
+
+        <!-- TIPO VEHÍCULO -->
+        <div class="form-group">
+          <label for="tipo">Tipo de Vehículo</label>
+          <select
+            id="tipo"
+            [(ngModel)]="tipoVehiculo"
+            name="tipo"
+            class="input-field"
+            (change)="onTipoVehiculoChange()"
+          >
+            <option value="auto">🚗 Auto</option>
+            <option value="moto">🏍️ Moto</option>
+            <option value="camion">🚛 Camión</option>
+          </select>
+        </div>
+
+        <!-- SERVICIOS DISPONIBLES -->
+        <div class="form-group">
+          <label>Servicios a Realizar</label>
+          <div class="servicios-grid">
+            <div
+              *ngFor="let servicio of serviciosDisponibles"
+              class="servicio-card"
+              [class.selected]="estaSeleccionado(servicio)"
+              (click)="toggleServicio(servicio)"
+            >
+              <div class="servicio-header">
+                <span class="servicio-nombre">{{ servicio.nombre }}</span>
+                <span class="servicio-check">
+                  {{ estaSeleccionado(servicio) ? '✓' : '' }}
+                </span>
+              </div>
+              <div class="servicio-info">
+                <span class="servicio-precio">${{ servicio.precio.toLocaleString() }}</span>
+                <span class="servicio-duracion">⏱️ {{ formatearDuracion(servicio.duracionEstimada) }}</span>
+              </div>
+              <p class="servicio-desc">{{ servicio.descripcion }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOTAL -->
+        <div class="total-box" *ngIf="serviciosSeleccionados.length > 0">
+          <span class="total-label">Total a Pagar:</span>
+          <span class="total-value">${{ calcularTotal().toLocaleString() }}</span>
+        </div>
+
+        <!-- OBSERVACIONES -->
+        <div class="form-group">
+          <label for="observaciones">Observaciones (Opcional)</label>
+          <textarea
+            id="observaciones"
+            [(ngModel)]="observaciones"
+            name="observaciones"
+            placeholder="Ej: Requiere atención especial en..."
+            class="input-field"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          ✓ Registrar Servicio
+        </button>
+      </form>
+
+      <div *ngIf="mensaje" class="alert" [class]="'alert-' + tipoMensaje">
+        <span class="alert-icon">
+          {{ tipoMensaje === 'success' ? '✓' : '✕' }}
+        </span>
+        <span>{{ mensaje }}</span>
+      </div>
+    </section>
+
+    <!-- Servicios en Espera -->
+    <section class="status-section" *ngIf="serviciosEnEspera.length > 0">
+      <div class="section-header">
+        <h2>⏳ En Espera</h2>
+        <span class="count">{{ serviciosEnEspera.length }}</span>
+      </div>
+
+      <div class="servicios-list">
+        <div
+          *ngFor="let servicio of serviciosEnEspera"
+          class="servicio-item espera"
+        >
+          <div class="servicio-info-main">
+            <div class="placa-badge">
+              {{ obtenerIconoVehiculo(servicio.tipoVehiculo) }} {{ servicio.placa }}
+            </div>
+            <div class="servicio-detalles">
+              <div class="servicios-nombres">
+                <span *ngFor="let s of servicio.servicios; let last = last">
+                  {{ s.nombre }}<span *ngIf="!last">, </span>
+                </span>
+              </div>
+              <div class="servicio-hora">
+                Registrado: {{ servicio.horaEntrada | date:'HH:mm' }}
+              </div>
+            </div>
+          </div>
+          <div class="servicio-actions">
+            <span class="precio">${{ servicio.precioTotal.toLocaleString() }}</span>
+            <button
+              class="btn-action btn-iniciar"
+              (click)="cambiarEstado(servicio.id, 'proceso')"
+            >
+              ▶️ Iniciar
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Servicios en Proceso -->
+    <section class="status-section" *ngIf="serviciosEnProceso.length > 0">
+      <div class="section-header">
+        <h2>🔧 En Proceso</h2>
+        <span class="count">{{ serviciosEnProceso.length }}</span>
+      </div>
+
+      <div class="servicios-list">
+        <div
+          *ngFor="let servicio of serviciosEnProceso"
+          class="servicio-item proceso"
+        >
+          <div class="servicio-info-main">
+            <div class="placa-badge">
+              {{ obtenerIconoVehiculo(servicio.tipoVehiculo) }} {{ servicio.placa }}
+            </div>
+            <div class="servicio-detalles">
+              <div class="servicios-nombres">
+                <span *ngFor="let s of servicio.servicios; let last = last">
+                  {{ s.nombre }}<span *ngIf="!last">, </span>
+                </span>
+              </div>
+              <div class="servicio-hora">
+                Iniciado: {{ servicio.horaInicio | date:'HH:mm' }}
+              </div>
+            </div>
+          </div>
+          <div class="servicio-actions">
+            <span class="precio">${{ servicio.precioTotal.toLocaleString() }}</span>
+            <button
+              class="btn-action btn-completar"
+              (click)="cambiarEstado(servicio.id, 'completado')"
+            >
+              ✓ Completar
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Servicios Completados (Listos para Entrega) -->
+    <section class="status-section" *ngIf="serviciosCompletados.length > 0">
+      <div class="section-header">
+        <h2>✅ Listos para Entrega</h2>
+        <span class="count">{{ serviciosCompletados.length }}</span>
+      </div>
+
+      <div class="servicios-list">
+        <div
+          *ngFor="let servicio of serviciosCompletados"
+          class="servicio-item completado"
+        >
+          <div class="servicio-info-main">
+            <div class="placa-badge">
+              {{ obtenerIconoVehiculo(servicio.tipoVehiculo) }} {{ servicio.placa }}
+            </div>
+            <div class="servicio-detalles">
+              <div class="servicios-nombres">
+                <span *ngFor="let s of servicio.servicios; let last = last">
+                  {{ s.nombre }}<span *ngIf="!last">, </span>
+                </span>
+              </div>
+              <div class="servicio-hora">
+                Completado: {{ servicio.horaCompletado | date:'HH:mm' }}
+              </div>
+            </div>
+          </div>
+          <div class="servicio-actions">
+            <span class="precio">${{ servicio.precioTotal.toLocaleString() }}</span>
+            <button
+              class="btn-action btn-entregar"
+              (click)="procesarSalida(servicio)"
+            >
+              🚗 Entregar
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== TICKET DE ENTRADA ========== -->
+    <div id="ticket-lavadero-print" *ngIf="ticketEntrada" style="display:none">
+      <div class="ticket">
+        <h4>═══════════════════</h4>
+        <h4>LAVADERO</h4>
+        <h4>TICKET DE ENTRADA</h4>
+        <h4>═══════════════════</h4>
+        
+        <p><strong>Placa:</strong> {{ ticketEntrada.placa }}</p>
+        <p><strong>Tipo:</strong> {{ ticketEntrada.tipoVehiculo }}</p>
+        <p><strong>Fecha:</strong> {{ ticketEntrada.horaEntrada | date:'dd/MM/yyyy' }}</p>
+        <p><strong>Hora:</strong> {{ ticketEntrada.horaEntrada | date:'HH:mm:ss' }}</p>
+        
+        <hr />
+        
+        <h4>SERVICIOS:</h4>
+        <p *ngFor="let servicio of ticketEntrada.servicios" style="text-align: left; padding-left: 5mm;">
+          - {{ servicio.nombre }} - ${{ servicio.precio.toLocaleString() }}
+        </p>
+        
+        <hr />
+        
+        <p style="font-size: 14px;"><strong>TOTAL:</strong></p>
+        <p style="font-size: 16px;"><strong>${{ ticketEntrada.precioTotal.toLocaleString() }}</strong></p>
+        
+        <svg id="barcode-lavadero"></svg>
+        
+        <hr />
+        
+        <p class="msg">
+          CONSERVE ESTE TICKET<br />
+          Preséntelo al retirar<br />
+          Tiempo estimado:<br />
+          {{ formatearDuracion(calcularDuracionTotal(ticketEntrada.servicios)) }}
+        </p>
+        
+        <h4>GRACIAS POR SU CONFIANZA</h4>
+      </div>
+    </div>
+
+    <!-- ========== TICKET DE SALIDA ========== -->
+    <div id="ticket-salida-print" *ngIf="ticketSalida" style="display:none">
+      <div class="ticket">
+        <h4>═══════════════════</h4>
+        <h4>LAVADERO</h4>
+        <h4>TICKET DE SALIDA</h4>
+        <h4>RECIBO DE PAGO</h4>
+        <h4>═══════════════════</h4>
+        
+        <p><strong>Placa:</strong> {{ ticketSalida.placa }}</p>
+        <p><strong>Tipo:</strong> {{ ticketSalida.tipoVehiculo }}</p>
+        
+        <hr />
+        
+        <p><strong>Entrada:</strong> {{ ticketSalida.horaEntrada | date:'dd/MM/yyyy HH:mm' }}</p>
+        <p><strong>Salida:</strong> {{ ticketSalida.horaSalida | date:'dd/MM/yyyy HH:mm' }}</p>
+        <p><strong>Tiempo:</strong> {{ calcularTiempoServicio(ticketSalida) }}</p>
+        
+        <hr />
+        
+        <h4>SERVICIOS REALIZADOS:</h4>
+        <p *ngFor="let servicio of ticketSalida.servicios" style="text-align: left; padding-left: 5mm;">
+          - {{ servicio.nombre }}<br />
+          &nbsp;&nbsp;${{ servicio.precio.toLocaleString() }}
+        </p>
+        
+        <hr />
+        
+        <p style="font-size: 14px;"><strong>TOTAL PAGADO:</strong></p>
+        <p style="font-size: 18px;"><strong>${{ ticketSalida.precioTotal.toLocaleString() }}</strong></p>
+        <p style="font-size: 11px;">Estado: PAGADO ✓</p>
+        
+        <svg id="barcode-salida"></svg>
+        
+        <hr />
+        
+        <p class="msg">
+          RECIBO OFICIAL<br />
+          Conserve para cualquier reclamación<br />
+          No. {{ ticketSalida.id }}<br />
+          {{ ticketSalida.horaSalida | date:'dd/MM/yyyy HH:mm:ss' }}
+        </p>
+        
+        <h4>¡GRACIAS POR SU VISITA!</h4>
+        <p class="msg">Vuelva pronto</p>
+      </div>
+    </div>
+
+    <!-- BOTONES DE IMPRESIÓN -->
+    <div class="print-buttons" *ngIf="ticketEntrada || ticketSalida">
+      <button
+        *ngIf="ticketEntrada"
+        class="btn-submit"
+        (click)="imprimirTicket('entrada')"
+      >
+        🖨️ Imprimir Ticket Entrada
+      </button>
+
+      <button
+        *ngIf="ticketSalida"
+        class="btn-submit btn-success"
+        (click)="imprimirTicket('salida')"
+      >
+        🖨️ Imprimir Ticket Salida / Recibo
+      </button>
+    </div>
+
+  </div>
+</div>

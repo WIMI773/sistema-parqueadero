@@ -1,0 +1,285 @@
+<!-- registro.component.html -->
+
+<div class="page-wrapper">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-back">
+      <button class="btn-back" (click)="volver()">← Volver</button>
+      <h1>Registro de Movimientos</h1>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Tabs Premium -->
+    <div class="tabs-section">
+      <div class="tabs">
+        <button class="tab-item" [class.active]="operacion === 'entrada'" (click)="cambiarOperacion('entrada')">
+          <span class="tab-icon">🟢</span>
+          <span>Registrar Entrada</span>
+        </button>
+        <button class="tab-item" [class.active]="operacion === 'salida'" (click)="cambiarOperacion('salida')">
+          <span class="tab-icon">🔴</span>
+          <span>Registrar Salida</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Form Card -->
+    <section class="form-card">
+      <h2>
+        {{ operacion === 'entrada'
+        ? 'Entrada de Vehículo'
+        : 'Salida de Vehículo' }}
+      </h2>
+
+      <form (ngSubmit)="registrar()" class="form">
+        <!-- CAMPO CÓDIGO DE BARRAS (Solo en salida) -->
+        <div *ngIf="operacion === 'salida'" class="form-group">
+          <label for="codigoBarras">
+            📷 Código de Barras del Ticket
+          </label>
+          <input id="codigoBarras" type="text" [(ngModel)]="codigoBarras" name="codigoBarras"
+            placeholder="Escanee o ingrese el código" (keyup.enter)="registrar()" class="input-field barcode-input"
+            autocomplete="off" />
+          <small class="input-hint">
+            Escanee el código del ticket de entrada
+          </small>
+        </div>
+
+        <!-- Separador visual (solo en salida) -->
+        <div *ngIf="operacion === 'salida'" class="separator">
+          <span>O</span>
+        </div>
+
+        <!-- CAMPO PLACA -->
+        <div class="form-group">
+          <label for="placa">
+            {{ operacion === 'salida' ? 'Placa (alternativo)' : 'Placa del Vehículo' }}
+          </label>
+          <input id="placa" type="text" [(ngModel)]="placa" name="placa" placeholder="Ej: ABC-123"
+            (keyup.enter)="registrar()" class="input-field" autocomplete="off" />
+        </div>
+
+        <!-- TIPO VEHÍCULO (Solo en entrada) -->
+        <div *ngIf="operacion === 'entrada'" class="form-group">
+          <label for="tipo">Tipo de Vehículo</label>
+          <select id="tipo" [(ngModel)]="tipo" name="tipo" class="input-field">
+            <option value="auto">🚗 Auto</option>
+            <option value="moto">🏍️ Moto</option>
+            <option value="camion">🚛 Camión</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-submit" [class]="operacion">
+          {{ operacion === 'entrada'
+          ? '✓ Registrar Entrada'
+          : '✓ Registrar Salida' }}
+        </button>
+      </form>
+
+      <div *ngIf="mensaje" class="alert" [class]="'alert-' + tipoMensaje">
+        <span class="alert-icon">
+          {{ tipoMensaje === 'success' ? '✓' : '✕' }}
+        </span>
+        <span>{{ mensaje }}</span>
+      </div>
+    </section>
+
+    <!-- Vehicles Inside -->
+    <section class="vehicles-section">
+      <div class="section-header">
+        <h2>Vehículos Dentro</h2>
+        <span class="count">{{ vehiculosDentro.length }}</span>
+      </div>
+
+      <div *ngIf="vehiculosDentro.length === 0" class="empty-state">
+        <div class="empty-icon">🚫</div>
+        <p>Sin vehículos en el parqueadero</p>
+      </div>
+
+      <div *ngIf="vehiculosDentro.length > 0" class="vehicles-grid">
+        <div *ngFor="let vehiculo of vehiculosDentro" class="vehicle-card">
+          <div class="vehicle-plate">
+            {{ vehiculo.placa }}
+          </div>
+          <div class="vehicle-details">
+            <div class="detail">
+              <span class="label">Entrada</span>
+              <span class="value">
+                {{ vehiculo.horaEntrada | date : 'HH:mm' }}
+              </span>
+            </div>
+            <div class="detail">
+              <span class="label">Tiempo</span>
+              <span class="value">
+                {{ vehiculo.duracion }}
+              </span>
+            </div>
+          </div>
+          <div class="vehicle-indicator"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== TICKET DE ENTRADA ========== -->
+<div id="ticket-print" *ngIf="ticketEntrada" class="ticket-hidden">
+  <div class="ticket">
+    <h4>═══════════════════</h4>
+    <h4>PARQUEADERO</h4>
+    <h4>TICKET DE ENTRADA</h4>
+    <h4>═══════════════════</h4>
+
+    <p><strong>Placa:</strong> {{ ticketEntrada.placa }}</p>
+    <p><strong>Tipo:</strong> {{ ticketEntrada.tipo }}</p>
+    <p><strong>Fecha:</strong> {{ ticketEntrada.fecha | date:'dd/MM/yyyy' }}</p>
+    <p><strong>Hora:</strong> {{ ticketEntrada.fecha | date:'HH:mm:ss' }}</p>
+
+    <hr />
+
+    <svg id="barcode"></svg>
+
+    <hr />
+
+    <p class="msg">
+      CONSERVE ESTE TICKET<br />
+      Presentelo al salir<br />
+      No nos responsabilizamos<br />
+      por objetos dejados en<br />
+      el vehiculo<br />
+    </p>
+
+    <h4>GRACIAS POR SU VISITA</h4>
+  </div>
+</div>
+
+
+    <button *ngIf="ticketEntrada" class="btn-submit entrada" (click)="imprimirTicket()" style="margin-top: 20px;">
+      🖨️ Imprimir Ticket Entrada
+    </button>
+
+    <!-- ========== RECIBO DE SALIDA (MODAL) ========== -->
+    <div *ngIf="mostrarRecibo && ticketSalida" class="modal-overlay" (click)="cerrarRecibo()">
+      <div class="modal-recibo" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Recibo de Salida</h3>
+          <button class="btn-close" (click)="cerrarRecibo()">✕</button>
+        </div>
+
+        <div class="recibo-content">
+          <div class="recibo-row">
+            <span class="label">Placa:</span>
+            <span class="value">{{ ticketSalida.placa }}</span>
+          </div>
+          <div class="recibo-row">
+            <span class="label">Tipo:</span>
+            <span class="value">{{ ticketSalida.tipoVehiculo }}</span>
+          </div>
+          <div class="recibo-row">
+            <span class="label">Entrada:</span>
+            <span class="value">
+              {{ ticketSalida.horaEntrada | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+          <div class="recibo-row">
+            <span class="label">Salida:</span>
+            <span class="value">
+              {{ ticketSalida.horaSalida | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+          <div class="recibo-row">
+            <span class="label">Duración:</span>
+            <span class="value">{{ ticketSalida.duracion }} minutos</span>
+          </div>
+
+          <hr />
+
+          <div class="recibo-row total">
+            <span class="label">Total a Pagar:</span>
+            <span class="value">
+              ${{ ticketSalida.tarifa?.toLocaleString() }}
+            </span>
+          </div>
+
+          <!-- Estado de Pago -->
+          <div class="payment-status" *ngIf="ticketSalida.pagado">
+            <div class="status-badge paid">
+              ✓ PAGADO
+            </div>
+            <p class="payment-date">
+              {{ ticketSalida.fechaPago | date:'dd/MM/yyyy HH:mm' }}
+            </p>
+          </div>
+
+          <div class="payment-status" *ngIf="!ticketSalida.pagado">
+            <div class="status-badge pending">
+              ⏳ PENDIENTE DE PAGO
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <!-- Botón Pagar (solo si no está pagado) -->
+          <button *ngIf="!ticketSalida.pagado" class="btn-pagar" (click)="procesarPago()">
+            💳 Registrar Pago
+          </button>
+
+          <!-- Botón Imprimir -->
+          <button class="btn-imprimir" (click)="imprimirRecibo()">
+            🖨️ Imprimir Recibo
+          </button>
+
+          <!-- Botón Cerrar (solo si ya está pagado) -->
+          <button *ngIf="ticketSalida.pagado" class="btn-cerrar" (click)="cerrarRecibo()">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== RECIBO PARA IMPRIMIR (OCULTO) ========== -->
+    <div id="recibo-print" *ngIf="ticketSalida" style="display:none">
+      <div class="ticket">
+        <h4>═══════════════════</h4>
+        <h4>PARQUEADERO</h4>
+        <h4>RECIBO DE PAGO</h4>
+        <h4>═══════════════════</h4>
+
+        <p><strong>Placa:</strong> {{ ticketSalida.placa }}</p>
+        <p><strong>Tipo:</strong> {{ ticketSalida.tipoVehiculo }}</p>
+
+        <hr />
+
+        <p><strong>Entrada:</strong></p>
+        <p>{{ ticketSalida.horaEntrada | date:'dd/MM/yyyy HH:mm' }}</p>
+
+        <p><strong>Salida:</strong></p>
+        <p>{{ ticketSalida.horaSalida | date:'dd/MM/yyyy HH:mm' }}</p>
+
+        <p><strong>Duracion:</strong> {{ ticketSalida.duracion }} min</p>
+
+        <hr />
+
+        <h4 style="font-size: 16px; margin: 10px 0;">TOTAL A PAGAR</h4>
+        <h4 style="font-size: 20px; margin: 10px 0;">${{ ticketSalida.tarifa?.toLocaleString() }}</h4>
+
+        <hr />
+
+        <div *ngIf="ticketSalida.pagado">
+          <p><strong>Estado:</strong> PAGADO</p>
+          <p><strong>Fecha Pago:</strong></p>
+          <p>{{ ticketSalida.fechaPago | date:'dd/MM/yyyy HH:mm' }}</p>
+          <hr />
+        </div>
+
+        <svg id="barcode-recibo"></svg>
+
+        <hr />
+
+        <p class="msg">
+          GRACIAS POR SU VISITA<br />
+          Vuelva pronto<br />
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

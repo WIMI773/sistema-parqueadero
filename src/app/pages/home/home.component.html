@@ -1,0 +1,127 @@
+<div class="dashboard-wrapper">
+
+  <!-- Navbar Premium -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <div class="logo">P</div>
+      <h1>Sistema Parqueadero</h1>
+    </div>
+
+    <div class="navbar-clock">
+      <span class="time">{{ horaActual }}</span>
+    </div>
+
+    <div class="navbar-user">
+      <div class="user-avatar">
+        {{ usuarioActual.charAt(0).toUpperCase() }}
+      </div>
+      <span class="username">{{ usuarioActual }}</span>
+      <button class="btn-logout" (click)="cerrarSesion()">Salir</button>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-card">
+        <h2>Bienvenido de vuelta</h2>
+        <p>Gestión inteligente de tu parqueadero y lavadero en tiempo real</p>
+
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="value">{{ estadisticas?.vehiculosDentro || 0 }}</span>
+            <span class="label">Vehículos Dentro</span>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="hero-stat">
+            <span class="value">∞</span>
+            <span class="label">Espacios Ilimitados</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Actions Premium -->
+    <section class="actions-section">
+      <h2 class="section-title">Acciones Rápidas</h2>
+
+      <div class="action-buttons">
+        <!-- PARQUEADERO -->
+        <button class="action-btn btn-primary" (click)="irRegistro()">
+          <div class="btn-icon">🚗</div>
+          <div class="btn-label">
+            <h4>Parqueadero</h4>
+            <p>Entrada o salida de vehículos</p>
+          </div>
+          <span class="btn-arrow">→</span>
+        </button>
+
+        <!-- LAVADERO -->
+        <button class="action-btn btn-lavadero" (click)="irLavadero()">
+          <div class="btn-icon">🚿</div>
+          <div class="btn-label">
+            <h4>Lavadero</h4>
+            <p>Registro de servicios de lavado</p>
+          </div>
+          <span class="btn-arrow">→</span>
+        </button>
+
+        <button class="action-btn btn-secondary" (click)="irHistorial()">
+          <div class="btn-icon">📊</div>
+          <div class="btn-label">
+            <h4>Ver Reportes</h4>
+            <p>Historial y análisis detallado</p>
+          </div>
+          <span class="btn-arrow">→</span>
+        </button>
+
+        <button class="action-btn btn-tertiary" (click)="irConfiguracion()">
+          <div class="btn-icon">⚙️</div>
+          <div class="btn-label">
+            <h4>Configuración</h4>
+            <p>Ajustar parámetros del sistema</p>
+          </div>
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Activity Timeline -->
+    <section class="timeline-section">
+      <h2 class="section-title">Movimientos Recientes</h2>
+
+      <div *ngIf="actividadReciente.length === 0" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>Sin movimientos registrados</p>
+      </div>
+
+      <div *ngIf="actividadReciente.length > 0" class="timeline">
+        <div
+          *ngFor="let actividad of actividadReciente"
+          class="timeline-item"
+          [class.entrada]="actividad.tipo === 'entrada'"
+          [class.salida]="actividad.tipo === 'salida'"
+        >
+          <div class="timeline-marker"></div>
+
+          <div class="timeline-content">
+            <div class="content-header">
+              <span class="placa">{{ actividad.placa }}</span>
+              <span class="tipo" [class]="actividad.tipo">
+                {{ actividad.tipo === 'entrada' ? '→ ENTRADA' : '← SALIDA' }}
+              </span>
+            </div>
+
+            <div class="content-time">
+              {{ actividad.fecha | date:'HH:mm:ss' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>

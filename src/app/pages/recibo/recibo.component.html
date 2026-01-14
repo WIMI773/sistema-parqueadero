@@ -1,0 +1,112 @@
+<div class="receipt-wrapper">
+  <div class="receipt-actions print-hidden">
+    <button class="action-btn btn-print" (click)="imprimirRecibo()">🖨️ Imprimir</button>
+    <button class="action-btn btn-pdf" (click)="descargarPDF()">📥 Descargar PDF</button>
+    <button class="action-btn btn-mark" (click)="marcarPagado()" [disabled]="recibo?.pagado">
+      {{ recibo?.pagado ? "✅ Pagado" : "💳 Marcar Pagado" }}
+    </button>
+    <button class="action-btn btn-back" (click)="volver()">← Volver</button>
+  </div>
+
+  <div *ngIf="cargando" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando recibo...</p>
+  </div>
+
+  <div *ngIf="!cargando && !recibo" class="error-state">
+    <span class="error-icon">⚠️</span>
+    <p>No se encontró el recibo solicitado</p>
+  </div>
+
+  <div *ngIf="!cargando && recibo" class="receipt-container">
+    <div class="receipt">
+      <!-- Header -->
+      <div class="receipt-header">
+        <div class="logo">P</div>
+        <h1>SISTEMA PARQUEADERO</h1>
+        <p class="subtitle">Recibo de Pago</p>
+      </div>
+
+      <!-- Receipt Info -->
+      <div class="receipt-info">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Número de Recibo</span>
+            <span class="value">{{ recibo.registroId }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Fecha</span>
+            <span class="value">{{ recibo.fecha | date : "dd/MM/yyyy" }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Hora</span>
+            <span class="value">{{ recibo.fecha | date : "HH:mm" }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vehicle Info -->
+      <div class="section">
+        <h2>Información del Vehículo</h2>
+        <div class="plate-display">{{ recibo.placa }}</div>
+      </div>
+
+      <!-- Parking Duration -->
+      <div class="section">
+        <h2>Detalles de la Estancia</h2>
+        <div class="details-grid">
+          <div class="detail-row">
+            <span class="label">Entrada</span>
+            <div class="values">
+              <span>{{ recibo.horaEntrada | date : "dd/MM/yyyy" }}</span>
+              <span>{{ recibo.horaEntrada | date : "HH:mm:ss" }}</span>
+            </div>
+          </div>
+          <div class="detail-row">
+            <span class="label">Salida</span>
+            <div class="values">
+              <span>{{ recibo.horaSalida | date : "dd/MM/yyyy" }}</span>
+              <span>{{ recibo.horaSalida | date : "HH:mm:ss" }}</span>
+            </div>
+          </div>
+          <div class="detail-row highlight">
+            <span class="label">Duración Total</span>
+            <span class="value-large">{{ formatearDuracion(recibo.duracion) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charges -->
+      <div class="section">
+        <h2>Detalles del Cobro</h2>
+        <div class="charges-table">
+          <div class="charge-row">
+           
+          </div>
+          <div class="charge-row">
+            <span>Duración</span>
+            <span>{{ recibo.duracion }} minutos</span>
+          </div>
+          <div class="charge-row total">
+            <span>TOTAL</span>
+            <span>${{ recibo.tarifa.toLocaleString("es-CO", { maximumFractionDigits: 0 }) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Status -->
+      <div class="section">
+        <div class="status" [class]="recibo?.pagado ? 'paid' : 'pending'">
+          <span class="status-icon">{{ recibo?.pagado ? '✓' : '⏳' }}</span>
+          <span class="status-text">{{ recibo?.pagado ? 'PAGADO' : 'PENDIENTE' }}</span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="receipt-footer">
+        <p>Gracias por usar nuestro servicio de parqueadero</p>
+        <p>Para más información: info&#64;parkingsystem.com</p>
+      </div>
+    </div>
+  </div>
+</div>
